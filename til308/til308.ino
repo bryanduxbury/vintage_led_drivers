@@ -5,59 +5,48 @@
 #define OD 11
 #define ODP 12
 
+#include "TIl308Driver.h"
+
+int latches[] = {7, 6, 5, 4};
+TIL308Driver display(OA, OB, OC, OD, ODP, latches, 4, 3);
+
 void setup() {
-  digitalWrite(LS, HIGH);
-  pinMode(LS, OUTPUT);
-
-  digitalWrite(OA, LOW);
-  pinMode(OA, OUTPUT);
-
-  digitalWrite(OB, LOW);
-  pinMode(OB, OUTPUT);
-
-  digitalWrite(OC, LOW);
-  pinMode(OC, OUTPUT);
-
-  digitalWrite(OD, LOW);
-  pinMode(OD, OUTPUT);
-
-  digitalWrite(ODP, LOW);
-  pinMode(ODP, OUTPUT);
-  
   pinMode(13, OUTPUT);
-}
-
-void latch() {
-  digitalWrite(LS, LOW);
-  delay(1);
-  digitalWrite(LS, HIGH);
+  
+  display.begin();
+  Serial.begin(115200);
 }
 
 void loop() {
-  for (int i = 0; i < 16; i++) {
-    digitalWrite(OA, (i & 1) ? HIGH : LOW);
-    digitalWrite(OB, (i & 2) ? HIGH : LOW);
-    digitalWrite(OC, (i & 4) ? HIGH : LOW);
-    digitalWrite(OD, (i & 8) ? HIGH : LOW);
-    latch();
-    delay(1000);
+  glyph_t str[4];
+  for (int i = 0; i < 10; i++) {
+    for (int j = 0; j < 4; j++) {
+      str[j] = i;
+    }
+    display.setOutput(str, 4);
+    delay(200);
   }
 
-  digitalWrite(OA, LOW);
-  digitalWrite(OB, LOW);
-  digitalWrite(OC, LOW);
-  digitalWrite(OD, LOW);
-  
-  for (int i = 0; i < 4; i++) {
-    digitalWrite(ODP, LOW);
-    latch();
-    delay(250);
-    digitalWrite(ODP, HIGH);
-    latch();
-    delay(250);
-  }
-  
   digitalWrite(13, HIGH);
   delay(100);
   digitalWrite(13, LOW);
+  
+  
+  for (int i = 0; i < 10000; i++) {
+    Serial.println(i);
+    str[3] = i % 10;
+    Serial.print(str[0]);
+    str[2] = (i / 10) % 10;
+    Serial.print(str[1]);
+    str[1] = (i / 100) % 10;
+    Serial.print(str[2]);
+    str[0] = i / 1000;
+    Serial.print(str[3]);
+    Serial.println();
+    // for (int j = 0; j < 4; j++) {
+    //   str[3-j] = (int)(i / pow(10.0, j-1)) % 10;
+    // }
+    display.setOutput(str, 4);
+    delay(200);
+  }
 }
